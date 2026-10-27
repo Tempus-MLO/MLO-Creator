@@ -1,5 +1,7 @@
 # How MLO Creator works
 
+*Leia em português: [HOW-IT-WORKS.pt-BR.md](HOW-IT-WORKS.pt-BR.md)*
+
 This is the reference for what each part of the program does and how it is built. The README covers installing and running it.
 
 ## Contents
