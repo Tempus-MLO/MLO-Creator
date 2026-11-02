@@ -97,8 +97,12 @@ namespace MloCreator
 
         public static ModelDoc Load(byte[] ydrBytes, string texDir, string name)
         {
-            ModelDoc md = new ModelDoc(); md.Name = name; md.TexDir = texDir; Directory.CreateDirectory(texDir);
             YdrFile y = new YdrFile(); y.Load(ydrBytes);
+            return Load(y, texDir, name);
+        }
+        public static ModelDoc Load(YdrFile y, string texDir, string name)
+        {
+            ModelDoc md = new ModelDoc(); md.Name = name; md.TexDir = texDir; if (texDir != null) Directory.CreateDirectory(texDir);
             if (y.Drawable == null) throw new Exception(name + " is not a model file the program can read.");
             string fn; string xml = MetaXml.GetXml(y, out fn, texDir);
             md.Doc = new XmlDocument(); md.Doc.LoadXml(xml);

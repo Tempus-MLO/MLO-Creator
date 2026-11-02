@@ -58,7 +58,7 @@ window.MLO = window.MLO || {};
     // ---------- top bar ----------
     function renderTop() {
         const tabs = $('tabs'); tabs.innerHTML = '';
-        (S.project.kind === 'import' ? [['import', 'Import'], ['build', 'Build'], ['paint', 'Paint'], ['export', 'Export']] : (S.project.kind === 'vanilla' ? [['vanilla', 'House'], ['build', 'Build'], ['paint', 'Paint'], ['export', 'Export']] : [['build', 'Build'], ['paint', 'Paint'], ['export', 'Export']]))
+        (S.project.kind === 'import' ? [['import', 'Import'], ['build', 'Build'], ['furnish', 'Inredning'], ['paint', 'Paint'], ['export', 'Export']] : (S.project.kind === 'vanilla' ? [['vanilla', 'House'], ['build', 'Build'], ['paint', 'Paint'], ['export', 'Export']] : [['build', 'Build'], ['paint', 'Paint'], ['export', 'Export']]))
             .forEach(t => tabs.append(el('button', { class: S.tab === t[0] ? 'on' : '', onclick: () => M.App.setTab(t[0]) }, t[1])));
         $('b-undo').disabled = !Model.hist.undo.length; $('b-redo').disabled = !Model.hist.redo.length;
         const nm = $('projname'); if (document.activeElement !== nm) nm.value = S.project.name;
@@ -374,7 +374,7 @@ window.MLO = window.MLO || {};
 
     UI.renderAll = function () { renderTop(); renderLeft(); renderRight(); renderBench(); document.body.classList.toggle('paint', S.tab === 'paint'); };
     UI.renderTop = renderTop; UI.renderRight = renderRight; UI.renderLeft = renderLeft; UI.renderBench = renderBench; UI.updateExportInfo = updateExportInfo;
-    UI.addUserImage = addUserImage; UI.newProjectDialog = newProjectDialog; UI.startDialog = startDialog; UI.saveAsDialog = saveAsDialog; UI.projectsDialog = projectsDialog; UI.helpDialog = helpDialog; UI.confirm = confirmDlg; UI.toast = toast; UI.closeModal = closeModal;
+    UI.addUserImage = addUserImage; UI.newProjectDialog = newProjectDialog; UI.startDialog = startDialog; UI.saveAsDialog = saveAsDialog; UI.projectsDialog = projectsDialog; UI.helpDialog = helpDialog; UI.confirm = confirmDlg; UI.toast = toast; UI.closeModal = closeModal; UI.modal = modal;
     UI.kit = { stepper, seg, swatchEl, confirm: confirmDlg };
     UI.updateShellInfo = function () { if (M.VanillaUI && S.project.kind === 'vanilla' && S.tab === 'export') M.VanillaUI.updatePlace(); };
     M.UI = UI;

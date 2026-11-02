@@ -1102,7 +1102,7 @@ window.MLO = window.MLO || {};
         toast(IM.cutOn ? 'Cutaway on: the model is hidden above ' + IM.cutH().toFixed(2) + ' m. C turns it off.' : 'Cutaway off.', 'ok');
     }
     function key(k) {
-        if (k === 'c' && S.tab === 'build') { toggleCutaway(); return true; }
+        if (k === 'c' && (S.tab === 'build' || S.tab === 'furnish')) { toggleCutaway(); return true; }
         if (k === 'r' && S.shellTool === 'figure' && S.figure) { S.figure.yaw += Math.PI / 4; return true; }
         // the Delete faces tool works like Blender's edit mode: A selects all, L the piece under the pointer, X / Delete deletes the selection, Esc selects none
         if (S.shellTool === 'faces' && S.tab === 'build') {
@@ -1118,7 +1118,7 @@ window.MLO = window.MLO || {};
             if (k === 'Escape' && csel.size) { colNone(); return true; }
         }
         // the Models tool: R turns the placed model 90 degrees, X / Delete removes it, Esc cancels a drag, then deselects, then forgets the chosen model
-        if (S.shellTool === 'fit' && S.tab === 'build' && M.FitModels.key(k)) return true;
+        if (S.shellTool === 'fit' && (S.tab === 'build' || S.tab === 'furnish') && M.FitModels.key(k)) return true;
         // the Plants tool: A selects all, X / Delete removes the selection, R keeps it, Esc selects none
         if (S.shellTool === 'plants' && S.tab === 'build' && M.Plants.tool.key(k)) return true;
         // the Collision box tool: A selects all, X / Delete deletes, R turns the selection 90 degrees, Esc cancels a drag or selects none
@@ -1144,7 +1144,7 @@ window.MLO = window.MLO || {};
 
     // keys with modifiers (Blender's): Alt+A select none, Ctrl+I invert, Ctrl+L grow to whole pieces, Shift+G select the same texture. true = handled
     function keyEv(e, k) {
-        if (S.shellTool === 'fit' && S.tab === 'build') return M.FitModels.keyEv(e, k);
+        if (S.shellTool === 'fit' && (S.tab === 'build' || S.tab === 'furnish')) return M.FitModels.keyEv(e, k);
         if (S.shellTool === 'plants' && S.tab === 'build') return M.Plants.tool.keyEv(e, k);
         if (S.shellTool === 'collision' && S.tab === 'build') {
             if (e.altKey && k === 'a') { colNone(); return true; }

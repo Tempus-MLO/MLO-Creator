@@ -14,3 +14,22 @@ desktop.ini
 
 # source code folder (always track)
 !source/
+# generated builds/tests and source-local runtime data
+**/dist/
+**/projects/
+**/cache/
+**/logs/
+**/output/
+**/Exports/
+**/settings.json
+source/MloCreator.exe
+source/MloCreator.exe.config
+source/lib/*.dll
+# local game assets must not be added to this repository
+*.rpf
+*.ydr
+*.ytd
+*.ybn
+*.ydd
+*.yft
+*.dds

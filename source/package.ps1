@@ -12,6 +12,7 @@ Copy-Item -LiteralPath $src -Destination (Join-Path $Dest 'MloCreator.exe')
 Copy-Item -LiteralPath "$here\MloCreator.exe.config" -Destination (Join-Path $Dest 'MloCreator.exe.config')
 Copy-Item -LiteralPath "$here\lib" -Destination (Join-Path $Dest 'lib') -Recurse
 Copy-Item -LiteralPath "$here\ui" -Destination (Join-Path $Dest 'ui') -Recurse
+Copy-Item -LiteralPath "$here\runtime" -Destination (Join-Path $Dest 'runtime') -Recurse
 Copy-Item -LiteralPath "$here\models" -Destination (Join-Path $Dest 'models') -Recurse
 Copy-Item -LiteralPath "$here\docs" -Destination (Join-Path $Dest 'docs') -Recurse
 Copy-Item -LiteralPath "$here\README.md" -Destination (Join-Path $Dest 'README.md')

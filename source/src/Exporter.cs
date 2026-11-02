@@ -30,7 +30,7 @@ namespace MloCreator
         public List<MatData> Mats = new List<MatData>(); public List<LightData> Lights = new List<LightData>();
     }
     class PortalData { public int Flags; public double[] C; }
-    class DoorData { public string Name; public double X, Y, Z, Heading, ScaleXY = 1, ScaleZ = 1; }      // scale: the door model fitted to its opening
+    class DoorData { public string Name; public int Flags = 1572864; public double X, Y, Z, Heading, ScaleXY = 1, ScaleZ = 1; }      // scale: the door model fitted to its opening
     class TexData { public string Name; public int Size; public bool Alpha; public int[] Argb; public string Usage = "DIFFUSE"; }
 
     public static class J
@@ -266,11 +266,11 @@ namespace MloCreator
         }
 
         // a prop placed inside the interior (a door): the same entity fields the game uses for this door in its own interiors
-        static string PropEntityXml(string arch, double x, double y, double z, double headingDeg, double scaleXY, double scaleZ)
+        static string PropEntityXml(string arch, double x, double y, double z, double headingDeg, double scaleXY, double scaleZ, int flags)
         {
             // a room entity's rotation is stored as the inverse of the real turn (CodeWalker and the game read it that way; the MLO instance itself is read directly)
             double r = -headingDeg * Math.PI / 360.0; string pad = "    ";
-            return pad + "<Item type=\"CEntityDef\">\n" + pad + " <archetypeName>" + arch + "</archetypeName>\n" + pad + " <flags value=\"1572864\" />\n" + pad + " <guid value=\"0\" />\n" + pad + " <position x=\"" + F(x) + "\" y=\"" + F(y) + "\" z=\"" + F(z) + "\" />\n" + pad + " <rotation x=\"0\" y=\"0\" z=\"" + F(Math.Sin(r)) + "\" w=\"" + F(Math.Cos(r)) + "\" />\n" + pad + " <scaleXY value=\"" + F(scaleXY) + "\" />\n" + pad + " <scaleZ value=\"" + F(scaleZ) + "\" />\n" + pad + " <parentIndex value=\"-1\" />\n" + pad + " <lodDist value=\"-1\" />\n" + pad + " <childLodDist value=\"0\" />\n" + pad + " <lodLevel>LODTYPES_DEPTH_ORPHANHD</lodLevel>\n" + pad + " <numChildren value=\"0\" />\n" + pad + " <priorityLevel>PRI_REQUIRED</priorityLevel>\n" + pad + " <extensions />\n" + pad + " <ambientOcclusionMultiplier value=\"255\" />\n" + pad + " <artificialAmbientOcclusion value=\"255\" />\n" + pad + " <tintValue value=\"0\" />\n" + pad + "</Item>\n";
+            return pad + "<Item type=\"CEntityDef\">\n" + pad + " <archetypeName>" + arch + "</archetypeName>\n" + pad + " <flags value=\"" + flags + "\" />\n" + pad + " <guid value=\"0\" />\n" + pad + " <position x=\"" + F(x) + "\" y=\"" + F(y) + "\" z=\"" + F(z) + "\" />\n" + pad + " <rotation x=\"0\" y=\"0\" z=\"" + F(Math.Sin(r)) + "\" w=\"" + F(Math.Cos(r)) + "\" />\n" + pad + " <scaleXY value=\"" + F(scaleXY) + "\" />\n" + pad + " <scaleZ value=\"" + F(scaleZ) + "\" />\n" + pad + " <parentIndex value=\"-1\" />\n" + pad + " <lodDist value=\"-1\" />\n" + pad + " <childLodDist value=\"0\" />\n" + pad + " <lodLevel>LODTYPES_DEPTH_ORPHANHD</lodLevel>\n" + pad + " <numChildren value=\"0\" />\n" + pad + " <priorityLevel>PRI_REQUIRED</priorityLevel>\n" + pad + " <extensions />\n" + pad + " <ambientOcclusionMultiplier value=\"255\" />\n" + pad + " <artificialAmbientOcclusion value=\"255\" />\n" + pad + " <tintValue value=\"0\" />\n" + pad + "</Item>\n";
         }
 
         static string YtypXml(string P, string mlo, string txd, List<GroupData> groups, List<PortalData> portals, V3 bmn, V3 bmx, string timecycle, List<DoorData> doors, string doorArch)
@@ -288,7 +288,7 @@ namespace MloCreator
             s.AppendLine("   " + Vec("bbMin", bmn) + "\n   " + Vec("bbMax", bmx) + "\n   " + Vec("bsCentre", bc) + "\n   <bsRadius value=\"" + F(br) + "\" />\n   <hdTextureDist value=\"100\" />");
             s.AppendLine("   <name>" + mlo + "</name>\n   <textureDictionary />\n   <clipDictionary />\n   <drawableDictionary />\n   <physicsDictionary>" + mlo + "</physicsDictionary>\n   <assetType>ASSET_TYPE_ASSETLESS</assetType>\n   <assetName>" + mlo + "</assetName>\n   <extensions />\n   <mloFlags value=\"0\" />\n   <entities>");
             foreach (GroupData g in groups) s.Append(EntityXml(P + g.Name, g.Flags, g.Lod));
-            foreach (DoorData d in doors) s.Append(PropEntityXml(d.Name, d.X, d.Y, d.Z, d.Heading, d.ScaleXY, d.ScaleZ));
+            foreach (DoorData d in doors) s.Append(PropEntityXml(d.Name, d.X, d.Y, d.Z, d.Heading, d.ScaleXY, d.ScaleZ, d.Flags));
             s.AppendLine("   </entities>");
             s.AppendLine("   <rooms itemType=\"CMloRoomDef\">");
             string rb = "<bbMin x=\"" + F(bmn.X) + "\" y=\"" + F(bmn.Y) + "\" z=\"" + F(bmn.Z) + "\" />\n     <bbMax x=\"" + F(bmx.X) + "\" y=\"" + F(bmx.Y) + "\" z=\"" + F(bmx.Z) + "\" />";
@@ -350,7 +350,7 @@ namespace MloCreator
             File.WriteAllText(path, text.Replace("\r\n", "\n"), new UTF8Encoding(false));
         }
 
-        class InteriorInfo { public List<string> DoorLines = new List<string>(); public List<string> Credits = new List<string>(); public string P, Label, Mlo, EntranceNote, DoorName; public double X, Y, Z, Heading; public int Doors; }
+        class InteriorInfo { public List<string> ControllerRows = new List<string>(); public List<string> DoorLines = new List<string>(); public List<string> Credits = new List<string>(); public string P, Label, Mlo, EntranceNote, DoorName; public double X, Y, Z, Heading; public int Doors; }
 
         // ---------- one interior (one building): meshes, collision, portals, doors, textures, ytyp, ymap and manifest go into the stream folder ----------
         static InteriorInfo WriteInterior(Dictionary<string, object> model, string outRoot, string stream, string work, List<string> log, List<string> files, List<string> warns, List<string> patchedFiles, ref long total, ref bool doorShipped)
@@ -407,6 +407,7 @@ namespace MloCreator
                 }
                 // placed window and door models (Models tool): baked to their size and place; windows join the interior's meshes, doors are props
                 FitResult fit = FitBake(model, P, groups, texs, ref needGlass, log, warns);
+                List<GameProp> gameProps = GameProps(model);
                 if (needGlass)
                 {
                     texs.Add(Solid("glass", 64, Px(186, 206, 214, 70), true, "DIFFUSE"));
@@ -442,6 +443,7 @@ namespace MloCreator
                 // ---- bounds ----
                 V3 bmn = new V3(1e9, 1e9, 1e9), bmx = new V3(-1e9, -1e9, -1e9);
                 foreach (GroupData g in groups) { V3 a, b; Bounds(g, out a, out b); bmn = new V3(Math.Min(bmn.X, a.X), Math.Min(bmn.Y, a.Y), Math.Min(bmn.Z, a.Z)); bmx = new V3(Math.Max(bmx.X, b.X), Math.Max(bmx.Y, b.Y), Math.Max(bmx.Z, b.Z)); }
+                foreach (var prop in gameProps) { bmn = new V3(Math.Min(bmn.X, prop.Min.X), Math.Min(bmn.Y, prop.Min.Y), Math.Min(bmn.Z, prop.Min.Z)); bmx = new V3(Math.Max(bmx.X, prop.Max.X), Math.Max(bmx.Y, prop.Max.Y), Math.Max(bmx.Z, prop.Max.Z)); }
                 bmn = bmn + new V3(-0.7, -0.7, -0.7); bmx = bmx + new V3(0.7, 0.7, 0.7);
 
                 // ---- placement ----
@@ -470,19 +472,24 @@ namespace MloCreator
                     log.Add(g.Name + ": " + tris + " triangles, " + g.Mats.Count + " materials" + (g.Lights.Count > 0 ? ", " + g.Lights.Count + " lights" : ""));
                 }
 
-                List<string> doorLines = new List<string>();
+                List<string> doorLines = new List<string>(); List<string> controllerRows = new List<string>();
                 double wrad = hd * Math.PI / 180.0, wcs = Math.Cos(wrad), wsn = Math.Sin(wrad);
                 foreach (FitDoor fd in fit.Doors)
                 {
-                    string dxml = DrawableXml(P + fd.Name, fd.G, P).Replace("</Drawable>", FitDoorBoundsXml(fd) + "</Drawable>");
+                    string dxml = DrawableXml(P + fd.Name, fd.G, P).Replace("</Drawable>", (fd.Item.Collision ? FitDoorBoundsXml(fd) : "") + "</Drawable>");
                     YdrFile dyd = XmlYdr.GetYdr(dxml, work);
                     total += Save(Path.Combine(stream, P + fd.Name + ".ydr"), dyd.Save(), files);
                     int dtris = 0; foreach (MatData m in fd.G.Mats) dtris += m.Idx.Length / 3;
                     // where the door stands in the world (the entity has no turn of its own: the interior's heading is its heading), for a door script (ox_doorlock...)
                     double wx = px + fd.D.X * wcs - fd.D.Y * wsn, wy = py + fd.D.X * wsn + fd.D.Y * wcs, wz = pz + fd.D.Z; uint dh = JenkHash.GenHash((P + fd.Name).ToLowerInvariant());
                     string dl = "`" + P + fd.Name + "` (model hash " + (int)dh + ", 0x" + dh.ToString("X8") + "): hinge at " + F(Math.Round(wx, 3)) + ", " + F(Math.Round(wy, 3)) + ", " + F(Math.Round(wz, 3)) + " (the middle of the door's height), heading " + F(Math.Round(hd, 3)) + ", the leaf is " + F(Math.Round(fd.W, 3)) + " m wide and swings about the hinge";
+                    if (fd.Item.Managed) {
+                        double angle = wrad + fd.Yaw;
+                        controllerRows.Add(" { id='" + P + fd.Name + "', group='" + P + fd.Item.Group + "', model='" + P + fd.Name + "', kind='" + fd.Item.Type + "', x=" + F(wx) + ", y=" + F(wy) + ", z=" + F(wz) + ", heading=" + F(hd + (fd.Item.Type == "tilt" ? fd.Item.Yaw * 180 / Math.PI : 0)) + ", tiltLift=" + F(fd.Item.TiltLift) + ", tiltOffset=" + F(fd.Item.TiltOffset) + ", height=" + F(fd.H) + ", dx=" + F(fd.Item.Type == "sliding" ? Math.Cos(angle) : 0) + ", dy=" + F(fd.Item.Type == "sliding" ? Math.Sin(angle) : 0) + ", dz=" + (fd.Item.Type == "garage" ? "1" : "0") + ", direction=" + fd.Item.Direction + ", travel=" + F(fd.Item.Travel) + ", speed=" + F(fd.Item.Speed) + ", collision=" + (fd.Item.Collision ? "true" : "false") + ", autoOpen=" + (fd.Item.AutoOpen ? "true" : "false") + ", autoDistance=" + F(fd.Item.AutoDistance) + ", closeDelay=" + F(fd.Item.CloseDelay) + ", oxDoorId=" + fd.Item.OxDoorId + ", triggerX=" + F(px + fd.Item.Cx * wcs - fd.Item.Cy * wsn) + ", triggerY=" + F(py + fd.Item.Cx * wsn + fd.Item.Cy * wcs) + ", triggerZ=" + F(pz + fd.Item.Zb + Math.Min(0.8, fd.H / 2)) + " },");
+                        dl = "`" + P + fd.Name + "`: " + fd.Item.Type + ", controller group `" + P + fd.Item.Group + "`, travel " + F(fd.Item.Travel) + ", speed " + F(fd.Item.Speed) + ", moving collision " + fd.Item.Collision;
+                    }
                     doorLines.Add(dl);
-                    log.Add("door " + fd.Name + ": " + dtris + " triangles, a real door object (the game's own door flags) with a box collision; " + dl.Replace("`", ""));
+                    log.Add("door " + fd.Name + ": " + dtris + " triangles, door model with exported collision settings; " + dl.Replace("`", ""));
                 }
 
                 YbnFile ybn = XmlYbn.GetYbn(BoundsXml(cverts, ctris, cmats.ToArray()));
@@ -521,11 +528,23 @@ namespace MloCreator
                 if (fit.Doors.Count > 0)
                 {
                     StringBuilder fa = new StringBuilder(doorArch ?? "");
-                    foreach (FitDoor fd in fit.Doors) { fa.Append(FitDoorArch(fd.D.Name, txd, fd.Mn, fd.Mx)); doors.Add(fd.D); }
+                    foreach (FitDoor fd in fit.Doors) {
+                        string arch = FitDoorArch(fd.D.Name, txd, fd.Mn, fd.Mx);
+                        // Script-owned kinematic props must not also be instantiated by the MLO or driven by door physics.
+                        if (fd.Item.Managed) arch = arch.Replace("<flags value=\"604110848\" />", "<flags value=\"537001984\" />").Replace("<specialAttribute value=\"7\" />", "<specialAttribute value=\"0\" />");
+                        if (!fd.Item.Collision) arch = arch.Replace("<physicsDictionary>" + fd.D.Name + "</physicsDictionary>", "<physicsDictionary />");
+                        fa.Append(arch); if (!fd.Item.Managed) doors.Add(fd.D);
+                    }
                     doorArch = fa.ToString(); string fitNames = fit.Doors.Count == 1 ? fit.Doors[0].D.Name : fit.Doors[0].D.Name + " and " + (fit.Doors.Count - 1) + " more"; doorName = doorName == null ? fitNames : doorName + " and " + fitNames;
                     log.Add("door models placed: " + fit.Doors.Count);
                 }
 
+                int nativeIndex = 0;
+                foreach (var prop in gameProps) {
+                    if (prop.Moving) controllerRows.Add(NativeController(prop, P, ++nativeIndex, px, py, pz, hd));
+                    else doors.Add(prop.Entity);
+                }
+                if (gameProps.Count > 0) log.Add("Native GTA prop references: " + gameProps.Count + "; no game models or textures copied");
                 XmlDocument ytypDoc = new XmlDocument(); ytypDoc.LoadXml(YtypXml(P, mlo, txd, groups, portals, bmn, bmx, timecycle, doors, doorArch));
                 total += Save(Path.Combine(stream, P + "types.ytyp"), XmlMeta.GetRSCData(ytypDoc), files);
                 log.Add("portals: " + portals.Count);
@@ -556,7 +575,7 @@ namespace MloCreator
                     foreach (string w2 in (List<string>)pr["warnings"]) warns.Add(w2);
                 }
 
-                InteriorInfo info = new InteriorInfo(); info.P = P; info.Label = label; info.Mlo = mlo; info.X = px; info.Y = py; info.Z = pz; info.Heading = hd; info.Doors = doors.Count; info.DoorName = doorName; info.EntranceNote = J.S(J.G(model, "entranceNote"), "none set"); info.Credits = fit.Credits; info.DoorLines = doorLines;
+                InteriorInfo info = new InteriorInfo(); info.P = P; info.Label = label; info.Mlo = mlo; info.X = px; info.Y = py; info.Z = pz; info.Heading = hd; info.Doors = doors.Count - gameProps.FindAll(g => !g.Moving).Count; info.DoorName = doorName; info.EntranceNote = J.S(J.G(model, "entranceNote"), "none set"); info.Credits = fit.Credits; info.DoorLines = doorLines; info.ControllerRows = controllerRows;
                 return info;
             }
         }
@@ -608,6 +627,17 @@ namespace MloCreator
                 StringBuilder fxs = new StringBuilder("fx_version 'cerulean'\ngame 'gta5'\nlua54 'yes'\nthis_is_a_map 'yes'\n\nauthor 'MLO Creator'\ndescription '" + label.Replace("'", "") + "'\nversion '1.0.0'\n\n-- registers the interior definitions; the manifest and the placement map stay in stream/\n");
                 foreach (InteriorInfo ii in infos) fxs.Append("data_file 'DLC_ITYP_REQUEST' 'stream/" + ii.P + "types.ytyp'\n");
                 fxs.Append("\nclient_script 'client/ipl.lua'\n");
+                List<string> controllerRows = new List<string>(); foreach (InteriorInfo ii in infos) controllerRows.AddRange(ii.ControllerRows);
+                if (controllerRows.Count > 0) {
+                    Directory.CreateDirectory(Path.Combine(dir, "server"));
+                    total += Save(Path.Combine(dir, "doors.lua"), Encoding.UTF8.GetBytes("MloDoors = {\n" + string.Join("\n", controllerRows.ToArray()) + "\n}\n"), files);
+                    foreach (string side in new string[] { "client", "server" }) {
+                        string template = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "runtime", side + "_doors.lua");
+                        if (!File.Exists(template)) throw new FileNotFoundException("Door controller template missing", template);
+                        total += Save(Path.Combine(dir, side, "doors.lua"), File.ReadAllBytes(template), files);
+                    }
+                    fxs.Append("shared_script 'doors.lua'\nclient_script 'client/doors.lua'\nserver_script 'server/doors.lua'\ndependency '/onesync'\n");
+                }
                 // bushes and trees the game's map places inside the rooms: hidden by a small client script (the map files themselves stay as they are)
                 List<string> plantRows = new List<string>(); List<string> plantNames = new List<string>();
                 foreach (object po in J.A(J.G(model, "hidePlants")))
@@ -631,9 +661,11 @@ namespace MloCreator
                 WriteText(Path.Combine(client, "ipl.lua"), ipl.ToString());
                 StringBuilder rd = new StringBuilder("# " + label + "\n\nGenerated by MLO Creator.\n\n## Install\n\n1. Upload the `" + res + "` folder to the server's resources folder.\n2. `refresh`, then `ensure " + res + "` (or add `ensure " + res + "` to server.cfg).\n3. Remove any older copy of this resource first; archetype names (" + string.Join(", ", infos.ConvertAll<string>(delegate (InteriorInfo q) { return "`" + q.P + "...`"; }).ToArray()) + ") must be unique on the server.\n");
                 rd.Append("\n## Where " + (infos.Count > 1 ? "they are" : "it is") + "\n\n");
-                foreach (InteriorInfo ii in infos) rd.Append("- **" + ii.Label + "** (`" + ii.P + "...`): world position of the origin " + F(ii.X) + ", " + F(ii.Y) + ", " + F(ii.Z) + "  heading " + F(ii.Heading) + ". Entrance / test spot: " + ii.EntranceNote + (ii.Doors > 0 ? ". " + ii.Doors + " door(s) placed with `" + ii.DoorName + "` as static props (add them to your door script, for example ox_doorlock, by model and coordinates if they should open)" : ". Doors are open doorways: add a door script/prop of your choice") + "\n");
+                foreach (InteriorInfo ii in infos) rd.Append("- **" + ii.Label + "** (`" + ii.P + "...`): world position of the origin " + F(ii.X) + ", " + F(ii.Y) + ", " + F(ii.Z) + "  heading " + F(ii.Heading) + ". Entrance / test spot: " + ii.EntranceNote + (ii.Doors > 0 ? ". " + ii.Doors + " door(s) placed with `" + ii.DoorName + "` as MLO props (use your door script); managed doors are listed below and spawned by the built-in controller" : (ii.ControllerRows.Count > 0 ? ". Managed doors are spawned by the built-in controller; see the groups below" : ". Doors are open doorways: add a door script/prop of your choice")) + "\n");
                 { List<string> cr = new List<string>(); foreach (InteriorInfo ii in infos) foreach (string c1 in ii.Credits) if (!cr.Contains(c1)) cr.Add(c1); if (cr.Count > 0) rd.Append("\n## Models used\n\nWindow and door models made by other people (check each licence before you use this resource on a server):\n\n- " + string.Join("\n- ", cr.ToArray()) + "\n"); }
-                { List<string> dls = new List<string>(); foreach (InteriorInfo ii in infos) foreach (string d1 in ii.DoorLines) dls.Add(d1); if (dls.Count > 0) rd.Append("\n## Doors you placed (for your door script)\n\nThese doors are props of their own with the same object flags and a box collision like the game's own doors, so a door script (ox_doorlock, the game's door system...) can find and swing them. Give the script the model and the hinge position:\n\n- " + string.Join("\n- ", dls.ToArray()) + "\n"); }
+                { List<string> dls = new List<string>(); foreach (InteriorInfo ii in infos) foreach (string d1 in ii.DoorLines) dls.Add(d1); if (dls.Count > 0) rd.Append("\n## Doors you placed (for your door script)\n\nUnmanaged hinged doors are MLO props for your existing door script. Managed entries identify their built-in controller group and must not also be registered with another door script. Collision follows the per-door setting. Models and coordinates:\n\n- " + string.Join("\n- ", dls.ToArray()) + "\n"); }
+                if (controllerRows.Count > 0) rd.Append("\n## Synchronized doors\n\n`doors.lua` lists controller groups. Use `/mlodoor <group> open|close|toggle` within 8 metres; grant ACE `mlo.doors` first. Server integrations: `exports[GetCurrentResourceName()]:SetDoorOpen(group, true)` (replace the resource name when called from another resource). Server validates client permissions, proximity, and rate limits. Both leaves share one state. State resets closed on resource restart; late joins and stream-in receive the current transition. Collision belongs to each moving object, never a fixed doorway blocker. Do not register managed models with another door script. This kinematic controller does not simulate crushing or prevent trapping: keep the travel path clear. Test collision with players and vehicles and two clients before deployment.\n");
+                if (controllerRows.Count > 0) rd.Append("\n## Automatic opening and locks\n\nPer-group settings are in `doors.lua`: autoOpen, autoDistance (metres), closeDelay (seconds), oxDoorId (0 = none). Auto open is decided by the server using player and vehicle positions. An open gate uses 2 m extra range and closes after the configured clear delay. Trusted server exports: SetDoorLocked(group, bool), GetDoorLocked(group), SetDoorOpen(group, bool). Locks block every opening path. Optional oxDoorId reads an existing ox_doorlock entry's state (0/false unlocked, 1/true locked); a missing provider or unknown entry keeps the gate locked. This does not create an ox entry or add ox interaction UI. Do not give a second native controller ownership of the same managed prop. Own locks reset on resource restart; ox-linked locks are read again. Test actual collision and two-client behaviour before deployment.\n");
                 if (plantNames.Count > 0) rd.Append("\n## Props and plants hidden\n\nThe game's map places bushes, trees, weeds and other props (bins, boxes, fences...) as objects of their own. These were taken out in the editor (they stand inside the rooms or in front of the windows and doors, or were picked by hand). `client/plants.lua` hides each one (`CreateModelHide`, a 0.6 m radius around the spot, so the same model elsewhere stays). No map file is replaced. Delete the line of a plant in that file to get it back:\n\n- " + string.Join("\n- ", plantNames.ToArray()) + "\n");
                 if (patchedFiles.Count > 0) rd.Append("\n## Game files this resource replaces\n\nThese files in stream/ are the game's own files with the openings you cut (model triangles, collision polygons, occluders) taken out; everything else is unchanged. Only one copy of a file with a given name can load: if another resource on your server ships a file with the same name, they conflict. Delete a file here and that cut goes away.\n\n- " + string.Join("\n- ", patchedFiles.ToArray()) + "\n");
                 WriteText(Path.Combine(dir, "README.md"), rd.ToString());

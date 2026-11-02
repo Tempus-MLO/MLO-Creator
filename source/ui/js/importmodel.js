@@ -16,6 +16,7 @@ window.MLO = window.MLO || {};
     IM.cutActive = function () { return IM.cutOn || IM.cutByTool(); };
     IM.applyCut = function () { const z = IM.cutActive() ? IM.cutH() : 1e9; if (IM.clipZ !== z) IM.clipZ = z; };
     const imp = () => S.project.import;
+    IM.isPlaceable = file => /\.ydr$/i.test(file) && Object.prototype.hasOwnProperty.call(imp().glbKinds || {}, file);
     const safe = () => encodeURIComponent(Model.safeName(S.project.name));
     const toast = (t, k) => bus.emit('toast', { text: t, kind: k });
 
@@ -216,7 +217,7 @@ window.MLO = window.MLO || {};
         const f = imp().frame, c = trig(), batches = [], tgt = [], ghost = S.refMode === 'ghost', iso = IM.isoMode(), hasB = !!IM.member && iso !== 'show';
         const dmf = imp().doorModel ? imp().doorModel.file : null;
         IM.models.forEach(m => {
-            if (!m.target && (!IM.showDetails || m.file === dmf)) return;
+            if (!m.target && (!IM.showDetails || m.file === dmf || IM.isPlaceable(m.file))) return;
             const md = m.target ? null : mdelSet(m.file), box = (!m.target && hasB) ? IM.detailBox() : null;       // md: faces deleted from a detail model; box: with a building selected, only the details near it
             m.geoms.forEach((g, gi) => {
                 const dcut = (!m.target && IM.cutDet.has(m.file)) ? IM.cutDet.get(m.file).get(g.g) : null;                   // a detail model's part with the rooms cleared out of it
@@ -529,7 +530,7 @@ window.MLO = window.MLO || {};
     // that were deleted for another reason.
     IM.partModels = function () {
         const dmf = imp().doorModel ? imp().doorModel.file : null;
-        return IM.models.filter(m => m.file !== dmf && (m.target || Math.max(m.bmax[0] - m.bmin[0], m.bmax[1] - m.bmin[1]) > 4)).sort((a, b) => (b.target ? 1 : 0) - (a.target ? 1 : 0));
+        return IM.models.filter(m => m.file !== dmf && !IM.isPlaceable(m.file) && (m.target || Math.max(m.bmax[0] - m.bmin[0], m.bmax[1] - m.bmin[1]) > 4)).sort((a, b) => (b.target ? 1 : 0) - (a.target ? 1 : 0));
     };
     IM.partRecord = function (file, g) { return (imp().parts || []).find(p => p.f === file && p.g === g) || null; };
     // faces of the part that are still there / in all
@@ -800,7 +801,7 @@ window.MLO = window.MLO || {};
         });
         IM.origD = null; IM.isl = {}; IM.cutDet = new Map(); IM.clearDet = null; IM.partGeo = null; IM.cutVer = (IM.cutVer || 0) + 1; return true;
     };
-    IM.detailFiles = () => { const dmf = imp().doorModel ? imp().doorModel.file : null; return IM.models.filter(m => !m.target && m.file !== dmf).map(m => m.file); };
+    IM.detailFiles = () => { const dmf = imp().doorModel ? imp().doorModel.file : null; return IM.models.filter(m => !m.target && m.file !== dmf && !IM.isPlaceable(m.file)).map(m => m.file); };
     IM.detailsPlaced = () => { const dp = imp().detailPlace || {}, all = IM.detailFiles(); return { have: all.filter(f => dp[f]).length, total: all.length }; };
     // look up where the detail models stand: the project's .ymap files, and the game's map files when `game` (the game is only read when the user asked once: the model's placement came from it, or the button)
     IM.lookupPlaces = async function (game) {
@@ -821,7 +822,7 @@ window.MLO = window.MLO || {};
         if (!clear) { if (IM.cutDet.size || IM.clearDet) { IM.cutDet = new Map(); IM.clearDet = null; IM.rebuild(); bus.emit('importstatus'); } return; }
         const det = new Map(), tot = { win: 0, veg: 0, other: 0 };
         try {
-            for (const m of IM.models.filter(x => !x.target && x.file !== dmf)) {
+            for (const m of IM.models.filter(x => !x.target && x.file !== dmf && !IM.isPlaceable(x.file))) {
                 const r = await Model.api('import/cut?name=' + safe(), 'POST', { target: m.file, origin: IM.detailOrigin(m.file), cutters: [], deletes: [], fills: [], clear }); if (seq !== detSeq) return;      // (the rooms in this file's own coordinates)
                 const xf = IM.detailXf(m.file), gm = new Map(); (r.geoms || []).forEach(g => gm.set(g.g, { pos: xf ? IM.xfPos(f32(g.pos), xf) : f32(g.pos), nrm: xf ? IM.xfNrm(f32(g.nrm), xf) : f32(g.nrm), uv: f32(g.uv), idx: u16(g.idx), tris: g.tris, src: g.src ? new Int32Array(bytes(g.src).buffer) : null }));
                 if (gm.size) det.set(m.file, gm); ['win', 'veg', 'other'].forEach(k => { tot[k] += (r.cleared && r.cleared[k]) || 0; });
@@ -985,7 +986,7 @@ window.MLO = window.MLO || {};
     // the detail models (grilles, vents, bushes: separate files that go with the building) in the same frame; the door model is not one of them
     function origDetails() {
         if (IM.origD) return IM.origD; const dmf = imp().doorModel ? imp().doorModel.file : null, out = [];
-        IM.models.forEach(m => { if (!m.target && m.file !== dmf) shellOfModel(m).forEach(t => out.push(t)); });
+        IM.models.forEach(m => { if (!m.target && m.file !== dmf && !IM.isPlaceable(m.file)) shellOfModel(m).forEach(t => out.push(t)); });
         return (IM.origD = out);
     }
     const isTarget = (file) => { const m = IM.targetModel(); return !file || (m && m.file === file); };

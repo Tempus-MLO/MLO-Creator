@@ -31,7 +31,7 @@ namespace MloCreator
         public string File; public int Room; public string Material; public bool Hi;
     }
 
-    public static class Vanilla
+    public static partial class Vanilla
     {
         public static volatile string Status = "";
         static RpfManager rpf; static string gta, cache;
@@ -41,11 +41,11 @@ namespace MloCreator
         public static bool Ready { get { return rpf != null; } }
         public static string GtaPath { get { return gta; } }
 
-        public static void Init(string gtaPath, string cacheDir)
+        public static void Init(string gtaPath, string cacheDir, bool refresh = false)
         {
             lock (gate)
             {
-                if (rpf != null && gtaPath == gta) return;
+                if (rpf != null && gtaPath == gta && !refresh) return;
                 if (!Directory.Exists(gtaPath) || !File.Exists(Path.Combine(gtaPath, "GTA5.exe"))) throw new Exception("GTA V was not found" + (string.IsNullOrEmpty(gtaPath) ? "" : " in \"" + gtaPath + "\"") + ". Put its folder in settings.json next to the program as \"gtaPath\" (or set the GTA5_PATH environment variable).");
                 Status = "Reading the game archives (about 10 seconds)...";
                 GTA5Keys.LoadFromPath(gtaPath, "");

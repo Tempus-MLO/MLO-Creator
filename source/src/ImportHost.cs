@@ -11,7 +11,7 @@ using CodeWalker.GameFiles;
 
 namespace MloCreator
 {
-    public static class ImportHost
+    public static partial class ImportHost
     {
         static string projDir, cacheDir;
         static readonly object gate = new object();
@@ -150,6 +150,7 @@ namespace MloCreator
             // the project's own .glb files, then the ones that come with the program (unless the project has a file of that name)
             List<string> paths = new List<string>(); HashSet<string> seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             if (Directory.Exists(dir)) foreach (string f in Directory.GetFiles(dir, "*.glb")) { paths.Add(f); seenNames.Add(Path.GetFileName(f)); }
+            if (Directory.Exists(dir)) foreach (string f in Directory.GetFiles(dir, "*.ydr")) if (J.G(kinds, Path.GetFileName(f)) != null) paths.Add(f);
             if (!string.IsNullOrEmpty(ModelsDir) && Directory.Exists(ModelsDir)) foreach (string f in Directory.GetFiles(ModelsDir, "*.glb")) if (!seenNames.Contains(Path.GetFileName(f))) paths.Add(f);
             {
                 foreach (string f in paths)
@@ -158,7 +159,7 @@ namespace MloCreator
                     Dictionary<string, object> e = new Dictionary<string, object>(); e["file"] = Path.GetFileName(f); e["builtin"] = !string.IsNullOrEmpty(ModelsDir) && Path.GetDirectoryName(f).Equals(ModelsDir, StringComparison.OrdinalIgnoreCase);
                     try
                     {
-                        GlbFile g = GlbFile.Load(f); e["kind"] = g.Kind; string fkind = J.S(J.G(kinds, Path.GetFileName(f)), g.Kind); e["title"] = g.Title; e["author"] = g.Author; e["license"] = g.License; e["source"] = g.Source;
+                        GlbFile g = GlbFile.Load(f); e["kind"] = g.Kind; string fkind = J.S(J.G(kinds, Path.GetFileName(f)), g.Kind); e["title"] = g.Title; e["author"] = g.Author; e["license"] = g.License; e["source"] = g.Source; e["warnings"] = g.Warnings;
                         List<object> mats = new List<object>(); foreach (GlbMat m in g.Mats) { Dictionary<string, object> md = new Dictionary<string, object>(); md["name"] = m.Name; md["key"] = m.Key; md["color"] = new double[] { m.AvgR, m.AvgG, m.AvgB, m.A }; md["tex"] = m.Tex >= 0 ? g.Texs[m.Tex].Name : ""; md["glass"] = m.Glass; mats.Add(md); }
                         e["mats"] = mats;
                         foreach (GlbTex t in g.Texs) { Dictionary<string, object> td = new Dictionary<string, object>(); td["name"] = t.Name; td["w"] = t.Size; td["h"] = t.Size; td["rgba"] = Convert.ToBase64String(t.Rgba); texs.Add(td); }
