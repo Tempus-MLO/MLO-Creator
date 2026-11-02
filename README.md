@@ -1,3 +1,19 @@
+> Forkens testversion: se [ändringslistan](CHANGELOG-SV.md). Källkod och byggscript ligger under `source/`; programfilerna i roten är distributionskopian. Kopiera vid behov rotens DLL-filer från `lib/` till `source/lib/` (lokalt; de ska inte läggas till i Git). Bygg från repo-roten med `powershell -ExecutionPolicy Bypass -File source/build.ps1`. Detta bygger körbar fil inne i `source/` och flyttar inte automatiskt över nya programfiler till repo-roten.
+
+# MLO Creator — prop ground snapping and full catalogue
+
+Adds Inredning → **Alla props**, with paged search across the local read-only YDR archive index, more categories and an optional furniture subset. Geometry loads only on selection. Original models retain reference-only export, collision and per-furniture Frys på plats. Doors/windows stay in Build.
+
+- [Snap to ground for props](docs/GROUND-SNAP.md)
+- [Alla props — current usage and limits](docs/ALL-PROPS.md)
+- [Expanded furniture and Frys på plats](docs/FROZEN-PROPS.md)
+- [Usage, original-door limitations and validation](docs/ORIGINAL-DOORS.md)
+- [RPF pilot analysis](docs/RPF-CATALOGUE.md) — historical ten-prop pilot; the current build has an expanded furniture candidate catalogue.
+- [Door types and direct import](docs/DOORS-YDR.md)
+- [Auto opening and lock integration](docs/AUTO-OPEN.md)
+
+Extract the whole folder separately from your existing installation. Copy project files if needed and retain originals. No GTA assets or external prop database are included. Actual FiveM collision and multiplayer validation remains required for original models.
+
 # MLO Creator
 
 A Windows program for building FiveM interiors (MLOs) inside an existing GTA V building model, then exporting a ready-to-upload resource folder.

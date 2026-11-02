@@ -136,7 +136,7 @@ namespace MloCreator
         }
     }
 
-    public class GlbFile
+    public partial class GlbFile
     {
         public string FileName, Stem, Title = "", Author = "", License = "", Source = "";
         public List<GlbModel> Models = new List<GlbModel>(); public List<GlbMat> Mats = new List<GlbMat>(); public List<GlbTex> Texs = new List<GlbTex>();
@@ -172,6 +172,8 @@ namespace MloCreator
         public static GlbFile Load(string path)
         {
             FileInfo fi = new FileInfo(path); if (!fi.Exists) throw new Exception("The model file " + Path.GetFileName(path) + " is not in the project.");
+            // YTD dependencies may change independently; the direct YDR adapter is read afresh.
+            if (Path.GetExtension(path).Equals(".ydr", StringComparison.OrdinalIgnoreCase)) return LoadYdr(path);
             string key = path.ToLowerInvariant() + "|" + fi.Length + "|" + fi.LastWriteTimeUtc.Ticks;
             lock (gate)
             {

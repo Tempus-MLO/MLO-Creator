@@ -243,6 +243,33 @@ namespace MloCreator
                 r["added"] = new List<string> { ImportHost.Upload(proj, c.Request.QueryString["file"], ReadBytes(c)) }; r["files"] = ImportHost.List(proj); Json200(c, r); return;
             }
             if (api == "remove" && method == "POST") { ImportHost.Remove(proj, c.Request.QueryString["file"]); r["files"] = ImportHost.List(proj); Json200(c, r); return; }
+            if (api == "rpf-index" && method == "POST") {
+                var body = Json.DeserializeObject(ReadBody(c)) as Dictionary<string, object>;
+                string gta = J.S(J.G(body, "gta"), ""); if (string.IsNullOrWhiteSpace(gta)) gta = GtaDefault();
+                var result = RpfCatalogue.Build(gta, Path.Combine(Root, "cache"), J.B(J.G(body, "force"), false));
+                var settings = Settings(); string labels = J.S(J.G(settings, "propTagsPath"), "");
+                if (File.Exists(labels)) { try { result = RpfCatalogue.ImportLabels(labels); } catch (Exception ex) { result["labelWarning"] = "Optional tags were not loaded: " + ex.Message; } }
+                settings["gtaPath"] = gta; File.WriteAllText(SettingsPath, Json.Serialize(settings), Encoding.UTF8);
+                Json200(c, result); return;
+            }
+            if (api == "rpf-labels" && method == "POST") {
+                var body = Json.DeserializeObject(ReadBody(c)) as Dictionary<string, object>;
+                string path = J.S(J.G(body, "path"), ""); var result = RpfCatalogue.ImportLabels(path);
+                var settings = Settings(); settings["propTagsPath"] = path; File.WriteAllText(SettingsPath, Json.Serialize(settings), Encoding.UTF8);
+                Json200(c, result); return;
+            }
+            if (api == "rpf-status") { Json200(c, new Dictionary<string, object> { { "ok", true }, { "status", RpfCatalogue.Status }, { "gta", GtaDefault() }, { "ready", RpfCatalogue.Ready } }); return; }
+            if (api == "rpf-browse") {
+                Json200(c,RpfCatalogue.Browse(c.Request.QueryString["q"],c.Request.QueryString["category"],c.Request.QueryString["scope"] ?? "props",J.I(c.Request.QueryString["offset"],0),J.I(c.Request.QueryString["limit"],24),c.Request.QueryString["order"])); return;
+            }
+            if (api == "rpf-search") { Json200(c, RpfCatalogue.Search(c.Request.QueryString["q"], c.Request.QueryString["category"], J.I(c.Request.QueryString["offset"], 0), 100)); return; }
+            if (api == "rpf-model" && method == "POST") {
+                var body = Json.DeserializeObject(ReadBody(c)) as Dictionary<string, object>;
+                string id = J.S(J.G(body, "id"), "");
+                if (!RpfCatalogue.Ready) { string gta = J.S(J.G(body, "gta"), ""); if (string.IsNullOrWhiteSpace(gta)) gta = GtaDefault(); RpfCatalogue.Build(gta, Path.Combine(Root, "cache"), false); }
+                var response = ImportHost.CatalogueModel(RpfCatalogue.Load(id), RpfCatalogue.Record(id));
+                response["ok"] = true; Json200(c, response); return;
+            }
             if (api == "glb") { Dictionary<string, object> gb = method == "POST" ? Json.DeserializeObject(ReadBody(c)) as Dictionary<string, object> : null; Dictionary<string, object> gl = ImportHost.GlbLibrary(proj, gb); gl["ok"] = true; Json200(c, gl); return; }
             if (api == "model")
             {
@@ -346,6 +373,7 @@ namespace MloCreator
             }
             try { string rs = Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Rockstar Games\Grand Theft Auto V", "InstallFolder", null) as string; if (!string.IsNullOrEmpty(rs)) cands.Add(rs); } catch (Exception) { }
             cands.Add(@"C:\Program Files\Rockstar Games\Grand Theft Auto V"); cands.Add(@"C:\Program Files (x86)\Steam\steamapps\common\Grand Theft Auto V"); cands.Add(@"C:\Program Files\Epic Games\GTAV"); cands.Add(@"C:\Program Files (x86)\Epic Games\GTAV");
+            foreach (DriveInfo drive in DriveInfo.GetDrives()) { try { if (drive.IsReady && drive.DriveType == DriveType.Fixed) cands.Add(Path.Combine(drive.RootDirectory.FullName, "SteamLibrary", "steamapps", "common", "Grand Theft Auto V")); } catch (Exception) { } }
             foreach (string c in cands) { try { if (File.Exists(Path.Combine(c, "GTA5.exe"))) return c; } catch (Exception) { } }
             return "";
         }

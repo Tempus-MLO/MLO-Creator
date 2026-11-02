@@ -402,6 +402,12 @@ window.MLO = window.MLO || {};
     }
 
     // ---------------- Build tab ----------------
+    UI2.renderFurnish = function (root) {
+        buildingPicker(root);
+        root.append(el('div', { class: 'h' }, 'Inredning'), el('div', { class: 'note' }, 'Choose furniture and props, then place them in the scene. Move, rotate, duplicate or remove placed items with the gizmo. Doors, windows and frames stay in Build.'));
+        root.append(el('div', { class: 'row wrap' }, el('button', { class: 'btn sm primary', onclick: () => M.FitModels.openCatalog() }, 'Open prop catalogue'), el('button', { class: 'btn sm' + (IM.cutOn ? ' primary' : ''), onclick: () => IT.toggleCutaway() }, 'Cutaway')));
+        M.FitModels.panel(root);
+    };
     UI2.renderBuild = function (root) {
         const P = S.project, I = P.import, sh = P.shell, t = S.shellTool, k = kit();
         buildingPicker(root);
@@ -970,7 +976,7 @@ window.MLO = window.MLO || {};
 
     UI2.renderLeft = function (root) {
         if (S.tab === 'import' || S.tab === 'build') UI2.renderChecklist(root, true);
-        if (S.tab === 'import') UI2.renderImport(root); else if (S.tab === 'build') UI2.renderBuild(root); else if (S.tab === 'paint') M.VanillaUI.renderPaint(root); else UI2.renderExport(root);
+        if (S.tab === 'import') UI2.renderImport(root); else if (S.tab === 'furnish') UI2.renderFurnish(root); else if (S.tab === 'build') UI2.renderBuild(root); else if (S.tab === 'paint') M.VanillaUI.renderPaint(root); else UI2.renderExport(root);
     };
     UI2.refresh = function () { M.UI.renderLeft(); M.UI.renderRight(); };
     UI2.updateInfo = function () { if (S.tab === 'export') UI2.updatePlace(); };

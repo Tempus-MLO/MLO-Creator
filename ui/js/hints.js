@@ -62,7 +62,7 @@ window.MLO = window.MLO || {};
 
     // what the hint bar says right now: [title, [[key, text], ...]] or null
     function current() {
-        if (S.tab !== 'build') return null;
+        if (S.tab !== 'build' && !(S.tab === 'furnish' && S.project.kind === 'import')) return null;
         const kind = S.project.kind;
         if (kind === 'grid') { const e = GRID[S.tool]; return e ? [e[0], e[1]] : null; }
         if (kind === 'vanilla') { const e = VANILLA[S.shellTool]; return e ? [e[0], e[1]] : null; }
@@ -79,7 +79,7 @@ window.MLO = window.MLO || {};
             if (S.opSel != null && S.project.shell.ops[S.opSel]) return ['Select', [['Click', 'Select another'], ['Drag an edge or corner', 'Resize'], ['Drag the inside', 'Move'], ['Shift', 'No snapping'], ['Del / X', 'Delete'], ['Esc', 'Deselect']]];
             return ['Select', [['Click', 'Select a room, a cutter, a partition or an opening']]];
         }
-        const e = IMPORT[t]; return e ? [e[0], e[1]] : null;
+        const e = IMPORT[t]; return e ? [S.tab === 'furnish' && t === 'fit' ? 'Inredning' : e[0], e[1]] : null;
     }
 
     let bar = null, last = '';

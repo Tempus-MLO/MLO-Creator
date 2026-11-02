@@ -76,10 +76,16 @@ window.MLO = window.MLO || {};
     };
     App.refreshPanels = function () { UI.renderLeft(); UI.renderBench(); UI.renderRight(); };
     App.setTab = function (tab) {
+        const previousTab = S.tab;
         S.tab = tab; M.Errors.crumb('tab ' + tab);
         if (isShell()) { if (tab === 'paint') { S.shellTool = 'paint'; S.benchSel = S.brush[S.paintTarget]; } else if (S.shellTool === 'paint') S.shellTool = 'room'; }
         else if (tab === 'paint') { S.tool = 'paint'; S.benchSel = S.brush[S.paintTarget]; }
         else if (S.tool === 'paint') S.tool = 'wall';
+        if (isImport()) {
+            if (tab === 'furnish') { if (previousTab !== 'furnish') S.furnishBuildTool = S.shellTool; S.shellTool = 'fit'; }
+            else if (previousTab === 'furnish' && tab !== 'paint') S.shellTool = S.furnishBuildTool || 'room';
+            if (M.FitModels) M.FitModels.changeScope(previousTab, tab);
+        }
         Tools.cancel(); M.ShellTools.cancel(); UI.renderAll(); UI.renderTop();
     };
     App.setTool = function (tool) {
@@ -90,7 +96,7 @@ window.MLO = window.MLO || {};
             if (tool === 'paint') { S.shellTool = 'paint'; App.setTab('paint'); return; }
             if (tool === 'collision' && isImport() && !S.showCollision) { S.showCollision = true; M.ImportModel.requestCollision(); M.UI.renderRight(); }       // the pieces to pick are the orange lines
             if (tool !== 'select') S.opSel = null;
-            S.shellTool = tool; if (S.tab !== 'build') S.tab = 'build'; M.ShellTools.cancel(); if (isImport() && M.Plants) M.Plants.toolChanged(); UI.renderAll(); return;
+            S.shellTool = tool; const targetTab = tool === 'fit' && S.tab === 'furnish' ? 'furnish' : 'build'; if (S.tab !== targetTab) { const previousTab = S.tab; S.tab = targetTab; if (M.FitModels) M.FitModels.changeScope(previousTab, targetTab); } M.ShellTools.cancel(); if (isImport() && M.Plants) M.Plants.toolChanged(); UI.renderAll(); return;
         }
         if (tool === 'paint') { S.tool = 'paint'; App.setTab('paint'); return; }
         S.tool = tool; if (S.tab !== 'build') S.tab = 'build';
@@ -182,7 +188,7 @@ window.MLO = window.MLO || {};
         }
         App._impName = null;
         if (isVanilla()) { S.view.roof = false; S.view.floor = true; S.view.walls = true; App.renderer.showGrid = S.view.grid; }
-        else if (S.tab === 'vanilla' || S.tab === 'import') S.tab = 'build';
+        else if (S.tab === 'vanilla' || S.tab === 'import' || S.tab === 'furnish') S.tab = 'build';
         if (IM.models.length) IM.reset();
         App.rebuildRef(); App.remesh(); App.frameAll(); UI.renderAll();
     }
